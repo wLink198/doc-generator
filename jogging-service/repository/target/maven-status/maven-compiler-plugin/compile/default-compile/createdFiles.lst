@@ -1,0 +1,5 @@
+com\svc\jogging\repository\entity\StepEntity.class
+com\svc\jogging\repository\facade\StepRepository.class
+com\svc\jogging\repository\facade\StepRepositoryCustom.class
+com\svc\jogging\repository\impl\StepRepositoryImpl.class
+com\svc\jogging\repository\entity\StepTrackingEntity.class
