@@ -1,6 +1,7 @@
 # doc-generator
 
 Tổng hợp ý tưởng: Tool gen & update doc tự động cho project code
+
 1️⃣ Đầu vào là gì?
 Code project (toàn bộ source hoặc folder)
 
