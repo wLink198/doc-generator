@@ -1,7 +1,52 @@
 import os
-import glob
+from collections import defaultdict
 from typing import List
 from google import genai
+import tiktoken
+
+def count_tokens(text: str) -> int:
+    # Dùng encoder gần giống với Gemini
+    encoder = tiktoken.get_encoding("cl100k_base")  # Tạm dùng encoder của GPT-4
+    return len(encoder.encode(text))
+
+def is_irrelevant_path(path: str) -> bool:
+    path = path.lower()
+    skip_keywords = [
+        "test", "dto", "entity", "model", "sample", "mock", 
+        "mapper", "convert", "vo", "constants", "util", "helper", "config"
+    ]
+    return any(k in path for k in skip_keywords)
+
+def is_irrelevant_file(filename: str) -> bool:
+    filename = filename.lower()
+    skip_suffixes = [
+        "test.java", "dto.java", "entity.java", "vo.java", 
+        "mapper.java", "util.java", "helper.java", "config.java", "constant.java"
+    ]
+    return any(filename.endswith(suffix) for suffix in skip_suffixes)
+
+def get_relevant_files(folder_path: str) -> list:
+    """Scan source folder and filter only meaningful infra-related files."""
+    relevant_files = []
+
+    for root, dirs, files in os.walk(folder_path):
+        rel_path = os.path.relpath(root, folder_path)
+        if is_irrelevant_path(rel_path):
+            continue
+        for file in files:
+            if not file.endswith(".java"):
+                continue
+            if is_irrelevant_file(file):
+                continue
+            full_path = os.path.join(root, file)
+            relevant_files.append(full_path)
+
+    # Include config/build files even if in root
+    for config_file in ['pom.xml', 'build.gradle', 'application.yml', 'application.yaml', 'application.properties']:
+        config_path = os.path.join(folder_path, config_file)
+        if os.path.exists(config_path):
+            relevant_files.append(config_path)
+    return relevant_files
 
 def get_java_files(folder_path: str) -> List[str]:
     """Get all .java files in folder and subfolders."""
@@ -30,38 +75,64 @@ def minimize_java_code(java_code: str) -> str:
     code = '\n'.join(line.strip() for line in code.splitlines() if line.strip())
     return code
 
-def read_and_minimize_all_java(folder_path: str) -> str:
-    files = get_java_files(folder_path)
-    all_code = ""
-    for file_path in files:
+def split_code_by_type(folder_path: str) -> dict:
+    result = defaultdict(str)
+    relevant_files = get_relevant_files(folder_path)
+
+    for file_path in relevant_files:
         content = read_file_content(file_path)
-        if content:
+        if not content:
+            continue
+
+        fname = os.path.basename(file_path)
+
+        if fname.endswith(".java"):
             minimized = minimize_java_code(content)
-            all_code += f"// File: {os.path.basename(file_path)}\n{minimized}\n\n"
-    return all_code
+            result["java_code"] += f"// File: {fname}\n{minimized}\n\n"
+        elif fname in ["pom.xml", "build.gradle"]:
+            result["build_config"] += f"# File: {fname}\n{content}\n\n"
+        elif fname.startswith("application.") and fname.endswith((".yml", ".yaml", ".properties")):
+            result["app_config"] += f"# File: {fname}\n{content}\n\n"
+    return result
 
-def create_business_doc_prompt(all_code: str) -> str:
+def create_sys_doc_prompt(java_code: str, build_config: str, app_config: str) -> str:
     return f"""
-Bạn là một chuyên gia phân tích phần mềm với kiến thức sâu sắc về ứng dụng Java và nghiệp vụ.
-
-Dưới đây là toàn bộ mã nguồn Java của dự án.
-
-Nhiệm vụ của bạn là phân tích mã và tạo ra một tài liệu **nghiệp vụ** chi tiết giải thích:
-
-- Lĩnh vực nghiệp vụ và các chức năng cốt lõi được triển khai
-- Các thực thể chính và vai trò của chúng trong ngữ cảnh nghiệp vụ
-- Cách các thành phần tương tác để hoàn thành các quy trình nghiệp vụ
-- Ví dụ về các kịch bản sử dụng hoặc luồng công việc điển hình
-- Các quy tắc hoặc ràng buộc nghiệp vụ quan trọng được nhúng trong mã
-
-Tập trung giải thích ở góc độ nghiệp vụ, tránh các chi tiết kỹ thuật thấp.
-
-Trả về tài liệu theo định dạng Markdown với các phần và tiêu đề rõ ràng.
-
-Mã nguồn Java:
-
+Bạn là một kiến trúc sư hệ thống có kinh nghiệm triển khai ứng dụng từ môi trường cục bộ (local) lên cloud (như GCP, AWS, Azure...).
+Dưới đây là mã nguồn Java và cấu hình hệ thống phần mềm đang chạy local.
+## Mục tiêu: Phân tích toàn bộ hệ thống **về mặt kiến trúc hạ tầng**, để phục vụ cho việc **chuyển đổi từ local lên cloud**.
+## Nhiệm vụ của bạn:
+1. **Xác định các thành phần hạ tầng chính** trong hệ thống, bao gồm nhưng không giới hạn ở:
+   - Web/API backend (vd: Spring Boot)
+   - Database (vd: MySQL, PostgreSQL, MongoDB)
+   - Caching (vd: Redis, Memcached)
+   - Message broker (vd: Kafka, RabbitMQ)
+   - External API integrations (vd: OAuth2, Email, Payment Gateway)
+   - Storage/file handling (vd: lưu file cục bộ, cloud storage)
+   - Scheduled Jobs/Batch Processing
+   - Config management (application.properties, YAML, env)
+   - Deployment method (Docker, local server, etc.)
+   - Any cloud-specific integration (nếu có)
+2. **Mô tả chi tiết cách các thành phần trên giao tiếp hoặc phụ thuộc lẫn nhau**
+3. **Tóm tắt các thư viện, framework chính ảnh hưởng đến kiến trúc hạ tầng** (Spring Boot, Hibernate, Kafka client, etc.)
+4. **Xác định các ràng buộc deployment hoặc dependency bên ngoài cần xử lý khi migrate** (vd: hard-coded path, file upload, local storage, etc.)
+### Yêu cầu trình bày:
+- Dùng định dạng Markdown với các tiêu đề rõ ràng
+- Trình bày gọn gàng, tập trung vào kiến trúc hệ thống, giọng văn chuyên nghiệp
+- Không phân tích nghiệp vụ hay logic tầng controller/service
+- **Trả lời bằng tiếng Việt**
+### Mã nguồn Java:
 ```java
-{all_code}
+{java_code}
+```
+
+### Cấu hình build (pom.xml hoặc gradle):
+```text
+{build_config}
+```
+
+### Cấu hình ứng dụng:
+```text
+{app_config}
 ```
 """
 
@@ -77,25 +148,28 @@ def call_gemini_api(prompt: str, api_key: str) -> str:
         print(f"Error calling Gemini API: {e}")
         return ""
 
-def generate_business_doc(folder_path: str, api_key: str) -> str:
-    all_code = read_and_minimize_all_java(folder_path)
-    if not all_code:
-        print("No Java code found or failed to read files.")
-        return ""
-    prompt = create_business_doc_prompt(all_code)
+def generate_system_doc(folder_path: str, api_key: str) -> str:
+    code_parts = split_code_by_type(folder_path)
+    full_code = code_parts["java_code"] + code_parts["build_config"] + code_parts["app_config"]
+    total_tokens = count_tokens(full_code)
+    print(f"Number of tokens: {total_tokens}")
+    prompt = create_sys_doc_prompt(
+        java_code=code_parts["java_code"],
+        build_config=code_parts["build_config"],
+        app_config=code_parts["app_config"]
+    )
     return call_gemini_api(prompt, api_key)
 
 def main():
-    folder_path = input("Enter folder path containing Java files: ")
-    api_key = input("Enter your Gemini API key: ")
-    business_doc = generate_business_doc(folder_path, api_key)
-    if business_doc:
-        output_file = "business_documentation.md"
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(business_doc)
-        print(f"Business documentation generated and saved to {output_file}")
+    folder_path = input("Enter folder path: ")
+    api_key = input("Enter Gemini API key: ")
+    result = generate_system_doc(folder_path, api_key)
+    if result:
+        with open("system_documentation.md", "w", encoding="utf-8") as f:
+            f.write(result)
+        print("Saved to system_documentation.md")
     else:
-        print("Failed to generate business documentation.")
+        print("Failed to generate documentation.")
 
 if __name__ == "__main__":
     main()
