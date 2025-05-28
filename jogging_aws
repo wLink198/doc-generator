@@ -1,0 +1,39 @@
+digraph "Jogging App Architecture on AWS" {
+	graph [fontcolor="#2D3436" fontname="Sans-Serif" fontsize=15 label="Jogging App Architecture on AWS" nodesep=0.60 pad=2.0 rankdir=LR ranksep=0.75 splines=ortho]
+	node [fixedsize=true fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 height=1.4 imagescale=true labelloc=b shape=box style=rounded width=1.4]
+	edge [color="#7B8894"]
+	"618d48d267e043a6800c5c518abe657f" -> "55d11b20f174407996c71da9e07c9216" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"55d11b20f174407996c71da9e07c9216" -> e81d5241cd1343a7b08083b1ac2fd1cf [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"55d11b20f174407996c71da9e07c9216" -> "9607cfa85fb6485085fa7e2e2a4a6b56" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"55d11b20f174407996c71da9e07c9216" -> d62c3438e65b460eb16225d6de32b65e [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	c7fa98f9c1b64195a1eee07f0a4a2592 -> bc59dd43035b4af18dc1c1c1c1e12ce3 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bc59dd43035b4af18dc1c1c1c1e12ce3 -> "618d48d267e043a6800c5c518abe657f" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"55d11b20f174407996c71da9e07c9216" -> "43d1d0793f004750acbc098ca047601f" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	e81d5241cd1343a7b08083b1ac2fd1cf -> "43d1d0793f004750acbc098ca047601f" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	d62c3438e65b460eb16225d6de32b65e -> "43d1d0793f004750acbc098ca047601f" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph cluster_VPC {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label=VPC labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		subgraph "cluster_Application Tier" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Application Tier" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"618d48d267e043a6800c5c518abe657f" [label="Load Balancer" height=1.9 image="C:\Users\Hi Home Windows11\AppData\Roaming\Python\Python39\site-packages\resources/aws/network\elastic-load-balancing.png" shape=none]
+			"55d11b20f174407996c71da9e07c9216" [label="ECS Fargate
+(Spring Boot App)" height=2.3 image="C:\Users\Hi Home Windows11\AppData\Roaming\Python\Python39\site-packages\resources/aws/compute\elastic-container-service.png" shape=none]
+		}
+		subgraph "cluster_Data Tier" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Data Tier" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			e81d5241cd1343a7b08083b1ac2fd1cf [label="DocumentDB
+(MongoDB)" height=2.3 image="C:\Users\Hi Home Windows11\AppData\Roaming\Python\Python39\site-packages\resources/aws/database\documentdb-mongodb-compatibility.png" shape=none]
+			"9607cfa85fb6485085fa7e2e2a4a6b56" [label="ElastiCache
+(Redis)" height=2.3 image="C:\Users\Hi Home Windows11\AppData\Roaming\Python\Python39\site-packages\resources/aws/database\elasticache.png" shape=none]
+		}
+		subgraph "cluster_Storage Tier" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Storage Tier" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			d62c3438e65b460eb16225d6de32b65e [label="S3
+(Logs, Static Assets)" height=2.3 image="C:\Users\Hi Home Windows11\AppData\Roaming\Python\Python39\site-packages\resources/aws/storage\simple-storage-service-s3.png" shape=none]
+		}
+		bc59dd43035b4af18dc1c1c1c1e12ce3 [label="Route53
+(DNS)" height=2.3 image="C:\Users\Hi Home Windows11\AppData\Roaming\Python\Python39\site-packages\resources/aws/network\route-53.png" shape=none]
+		c7fa98f9c1b64195a1eee07f0a4a2592 [label=Internet]
+		"43d1d0793f004750acbc098ca047601f" [label="IAM Roles" height=1.9 image="C:\Users\Hi Home Windows11\AppData\Roaming\Python\Python39\site-packages\resources/aws/security\identity-and-access-management-iam.png" shape=none]
+	}
+}
