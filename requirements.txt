@@ -1,2 +1,2 @@
-genai
+google-genai
 tiktoken

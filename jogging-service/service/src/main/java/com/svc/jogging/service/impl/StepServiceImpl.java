@@ -46,14 +46,9 @@ public class StepServiceImpl implements StepService {
         if (req.getSteps() < entity.getSteps()) {
             throw new BusinessException("Can not record new steps which are less than previous steps");
         }
-        // tùy vào yêu cầu nghiệp vụ mà sẽ check thêm steps trong khoảng thời gian và địa điểm/timezone có hợp lý hay không
     }
 
     private void validateInitStepReq(StepCountReq req) {
-        /*
-        validate initial data dựa vào yêu cầu nghiệp vụ
-        lần đầu record số bước chân luôn bằng 0
-        */
         if (req.getSteps() > 0) {
             throw new BusinessException("Steps can not be greater than 0 for the first time recorded");
         }
@@ -62,7 +57,6 @@ public class StepServiceImpl implements StepService {
     @Override
     public List<StepDto> findTopUsersByDate(int limit, String date, String zoneId) {
         TimeUtil.TimeOfDay timeOfDay;
-        // tùy vào yêu cầu nghiệp vụ mà sẽ validate date có hợp lệ không
         if (StringUtils.hasLength(date)) {
             timeOfDay = TimeUtil.getTimeOfDay(date, zoneId);
         } else {
