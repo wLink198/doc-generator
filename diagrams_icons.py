@@ -36,4 +36,3 @@ from diagrams.programming.flowchart import Action, Collate, Database, Decision, 
 from diagrams.programming.framework import Angular, Backbone, Camel, Django, Dotnet, Ember, Fastapi, Flask, Flutter, Graphql, Hibernate, Jhipster, Laravel, Micronaut, Nextjs, Phoenix, Quarkus, Rails, React, Spring, Sqlpage, Starlette, Svelte, Vercel, Vue
 from diagrams.programming.language import Bash, C, Cpp, Csharp, Dart, Elixir, Erlang, Go, Java, Javascript, Kotlin, Latex, Matlab, Nodejs, Php, Python, R, Ruby, Rust, Scala, Sql, Swift, Typescript
 from diagrams.programming.runtime import Dapr
-
