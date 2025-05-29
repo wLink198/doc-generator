@@ -22,6 +22,13 @@ Dưới đây là tài liệu mô tả hệ thống phần mềm hiện tại, �
 4. Liệt kê các rủi ro tiềm ẩn và cách giảm thiểu.
 5. Đưa ra các khuyến nghị về bảo mật, logging, scaling, monitoring.
 
+### Yêu cầu trình bày:
+- Dùng định dạng Markdown với các tiêu đề rõ ràng
+- Trình bày gọn gàng, tập trung vào kiến trúc hệ thống, giọng văn chuyên nghiệp
+- Không phân tích nghiệp vụ hay logic tầng controller/service
+- **Trả lời bằng tiếng Việt**
+###
+
 ### Trình bày bằng tiếng Việt, rõ ràng, định dạng Markdown.
 """
 
