@@ -37,7 +37,7 @@ and represent them as rectangular nodes with the layer name and link to the icon
 - Do not explain the code or add comments.
 
 🎯 Objective: Generate a clean, valid diagram code, strictly based on given components and valid node list. 
-Skip anything unclear or not represented by the allowed node classes. Try to avoid Blank icon unless it is app layer.
+Skip anything unclear or not represented by the allowed node classes.
 Now, generate the diagram code based on the markdown content below:
 
 \"\"\"{MARKDOWN_DOC}\"\"\"
